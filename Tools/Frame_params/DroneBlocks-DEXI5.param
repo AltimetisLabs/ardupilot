@@ -1,0 +1,69 @@
+#NOTE: DroneBlocks DEXI-5 starting setup for ArduPilot Copter 4.7+ on ARK_PI6X.
+# This is the first-flight setup, not a finished tune. Rate P, I, and D stay
+# at the Copter defaults. Nothing here was produced by AutoTune or System ID,
+# and it has not been flight-tested on a DEXI-5.
+#
+# Load after flashing Copter for board ARK_PI6X (firmware.ardupilot.org,
+# Copter/stable/ARK_PI6X/arducopter.apj). The flight-controller USB is wired
+# only to the Pi. From the Pi: ARK-UI Firmware tab, or flash_firmware.sh.
+# Then, in Mission Planner or MAVProxy: param load this file, and reboot.
+#
+# First flights are Stabilize and AltHold. There is no GPS in the stock kit,
+# and the onboard flow sensor and rangefinder are not in the ARK_PI6X hwdef.
+# Props off for the motor test. Quad X order matches PX4 airframe 4601:
+#   1 front-right CCW, 2 rear-left CCW, 3 front-left CW, 4 rear-right CW.
+#
+# AutoTune (flight mode 15) is how you finish the rate tune, after a stable
+# AltHold hover and a harmonic notch. Keep a switch that leaves AutoTune
+# immediately. AUTOTUNE_AGGR stays at 0.075.
+#
+# System ID (flight mode 25) does not change PIDs. It injects a chirp and
+# logs it. SID_AXIS must be non-zero, the aircraft must already be flying,
+# and you enter it from Stabilize or AltHold for axes 1-13. Do not take off
+# or land in System ID. Use it later if you want a model from the log.
+
+# Quad X, same output order as the PX4 DEXI-5 airframe
+FRAME_CLASS,1
+FRAME_TYPE,1
+
+# INA226 is the ARK_PI6X default monitor. Pack is 4000 mAh 6S Li-ion.
+BATT_MONITOR,21
+BATT_CAPACITY,4000
+# Copter's default BATT_LOW_VOLT is 10.5 V. That is far below a 6S pack.
+# 21.0 V is 3.5 V/cell. 19.8 V is 3.3 V/cell, the PX4 airframe empty voltage.
+BATT_LOW_VOLT,21.0
+BATT_CRT_VOLT,19.8
+# Land. RTL has no position to return to until a GPS is fitted.
+BATT_FS_LOW_ACT,1
+BATT_FS_CRT_ACT,1
+# Radio failsafe: 3 is always Land. The Copter default is 1, always RTL.
+FS_THR_ENABLE,3
+
+# Thrust curve for a 5.5 inch prop. 0.55 and the 80 Hz gyro filter are the
+# wiki's 5 inch row, the nearest published size. 0.22 is the PX4 hover fraction.
+MOT_BAT_VOLT_MAX,25.2
+MOT_BAT_VOLT_MIN,19.8
+MOT_THST_EXPO,0.55
+MOT_THST_HOVER,0.22
+MOT_SPIN_MAX,0.95
+# DShot150, matching PX4 PWM_MAIN_TIM0 -3 on this ESC.
+MOT_PWM_TYPE,4
+
+INS_ACCEL_FILTER,10
+INS_GYRO_FILTER,80
+ATC_RAT_RLL_FLTT,40
+ATC_RAT_RLL_FLTD,40
+ATC_RAT_PIT_FLTT,40
+ATC_RAT_PIT_FLTD,40
+ATC_RAT_YAW_FLTT,40
+ATC_RAT_YAW_FLTE,2
+# Wiki acceleration table starts at 10 inch props. These are that row, used
+# as a first-flight ceiling. Mission Planner's Initial Parameter Setup can
+# replace them when you enter a 5.5 inch prop.
+ATC_ACC_P_MAX,1100
+ATC_ACC_R_MAX,1100
+ATC_ACC_Y_MAX,200
+
+# Board wiring: UART4 ESC telemetry, USART6 RC (ExpressLRS / CRSF).
+SERIAL4_PROTOCOL,16
+SERIAL5_PROTOCOL,23
